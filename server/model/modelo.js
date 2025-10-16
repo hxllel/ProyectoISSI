@@ -41,11 +41,16 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     codigo_postal: { type: DataTypes.STRING(20), allowNull: false },
     colonia: { type: DataTypes.STRING(20), allowNull: false },
     delegacion: { type: DataTypes.STRING(20), allowNull: false },
+    ciudad: { type: DataTypes.STRING(20), allowNull: false },
     telefono: { type: DataTypes.STRING(20), allowNull: false },
-    email: { type: DataTypes.STRING(20), allowNull: false },
+    email: { type: DataTypes.STRING(50), allowNull: false },
     foto: { type: DataTypes.BLOB},
-    grado: { type: DataTypes.STRING(20) }
+    grado: { type: DataTypes.STRING(50) },
+    carrera: { type: DataTypes.STRING(40) },
+    situacion:{ type: DataTypes.STRING(20) }
   }, { tableName: "datos_personales", timestamps: false });
+
+ 
 
 
   const DatosMedicos = sequelize.define("DatosMedicos", {
@@ -71,12 +76,10 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     descri: { type: DataTypes.STRING(500), allowNull: false }
   }, { tableName: "enfermedades", timestamps: false });
 
-  Enfermedades.associate = (models) => {
-    Enfermedades.belongsTo(models.DatosMedicos, {
+    Enfermedades.belongsTo(DatosMedicos, {
       foreignKey: "id_dat_med",
       targetKey: "id"
     });
-  };
 
   const Estudiante = sequelize.define("Estudiante", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
@@ -86,12 +89,18 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     estado_academico: {type: DataTypes.STRING(20), allowNull:false}
   }, {tableName: "estudiante", timestamps:false});
 
-  Estudiante.associate=(models)=>{
-    Estudiante.belongsTo(models.DatosPersonales, {
+    Estudiante.belongsTo(DatosPersonales, {
         foreignKey: "id_usuario",
         targetKey: "id"
     });
-  };
+
+  const Carrera = sequelize.define("Carrera", {
+    nombre: { type: DataTypes.STRING(40), primaryKey: true },
+    creditos_iniciales: { type: DataTypes.INTEGER, allowNull: false },
+    prefijo_grupo: { type: DataTypes.STRING(10), allowNull: false },
+    duracion_max: { type: DataTypes.INTEGER, allowNull: false }
+  }, {tableName: "carrera", timestamps:false});
+
 
   const Unidad_Aprendizaje  = sequelize.define("Unidad_Aprendizaje", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
@@ -100,26 +109,36 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     carrera : { type: DataTypes.STRING(50), allowNull:false },
     semestre : { type: DataTypes.INTEGER, allowNull:false }
   }, {tableName: "unidad_de_aprendizaje", timestamps:false});
+  Unidad_Aprendizaje.associate=(models)=>{
+    Unidad_Aprendizaje.belongsTo(models.Carrera, {
+        foreignKey: "carrera",
+        targetKey: "nombre"
+    });
+  }
 
   const Grupo = sequelize.define("Grupo", {
     id: { type: DataTypes.STRING(15), primaryKey: true},
-    id_ua: { type: DataTypes.STRING(15), allowNull:false},
-    id_prof: {type: DataTypes.STRING(15), allowNull: false }
+    nombre: { type: DataTypes.STRING(25), allowNull: false},
+    id_ua: { type: DataTypes.STRING(15), allowNull:false, references: {}},
+    id_prof: {type: DataTypes.STRING(15), allowNull: false},
+    turno: {type: DataTypes.STRING(15), allowNull: false},
+    cupo: {type: DataTypes.INTEGER, allowNull: false}  
   }, {tableName: "grupo", timestamps: false});
 
-  Grupo.associate=(models)=>{
-    Grupo.belongsTo(models.Unidad_Aprendizaje,{
-        foreignKey: "id_ua",
-        targetKey: "id"
-    });
-  };
-
-  Grupo.associate=(models)=>{
-    Grupo.belongsTo(models.DatosPersonales, {
-        foreignKey: "id_prof",
-        targetKey: "id"
-    });
-  };
+Grupo.belongsTo(Unidad_Aprendizaje, {
+    foreignKey: "id_ua",
+    targetKey: "id",
+    onDelete: "CASCADE",
+  hooks: true,
+  constraints: true,
+});
+Grupo.belongsTo(DatosPersonales, {
+    foreignKey: "id_prof",
+    targetKey: "id",
+    onDelete: "CASCADE",
+  hooks: true,
+  constraints: true,
+});
 
 
   const Distribucion = sequelize.define("Distribucion", {
@@ -129,24 +148,24 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     dia : {type: DataTypes.STRING(15), allowNull: false}
   }, {tableName: "distribucion", timestamps: false});
 
-  Distribucion.associate=(models)=>{
-    Distribucion.belongsTo(models.Grupo, {
+
+    Distribucion.belongsTo(Grupo, {
         foreignKey: "id_grupo",
         targetKey: "id"
     });
-  };
+
 
   const Horario =sequelize.define("Horario", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
     id_alumno : {type: DataTypes.STRING(15), allowNull: false}
   }, {tableName : "horario", timestamps:false});
 
-  Horario.associate=(models)=>{
-    Horario.belongsTo(models.DatosPersonales, {
+  
+    Horario.belongsTo(DatosPersonales, {
         foreignKey: "id_alumno",
         targetKey: "id"
     });
-  };
+  
 
   const Mat_Inscritos = sequelize.define("Mat_Inscritos", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
@@ -156,19 +175,17 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
   }, {tableName: "mat_inscritos", timestamps: false});
 
 
-Mat_Inscritos.associate=(models)=>{
-    Mat_Inscritos.belongsTo(models.Horario, {
+
+    Mat_Inscritos.belongsTo(Horario, {
         foreignKey: "id_horario",
         targetKey: "id"
     });
-  };
 
-Mat_Inscritos.associate=(models)=>{
-    Mat_Inscritos.belongsTo(models.Grupo, {
+
+    Mat_Inscritos.belongsTo(Grupo, {
         foreignKey: "id_grupo",
         targetKey: "id"
     });
-  };
 
   const Inscripcion = sequelize.define("Incripcion", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
@@ -177,12 +194,11 @@ Mat_Inscritos.associate=(models)=>{
     fecha_hora_cad : {type: DataTypes.DATE(6), allowNull: false}
   }, {tableName: "inscripcion", timestamps: false});
 
-  Inscripcion.associate=(models)=>{
-    Inscripcion.belongsTo(models.DatosPersonales, {
+
+  Inscripcion.belongsTo(DatosPersonales, {
         foreignKey: "id_alumno",
         targetKey: "id"
     });
-  };
 
   const Resena = sequelize.define("Resena", {
      id: { type: DataTypes.STRING(15), primaryKey: true },
@@ -193,18 +209,14 @@ Mat_Inscritos.associate=(models)=>{
      fecha: {type: DataTypes.DATE, allowNull:false}
   }, {tableName: "resena", timestamps:false});
 
-    Resena.associate=(models)=>{
-    Resena.belongsTo(models.DatosPersonales, {
+    Resena.belongsTo(DatosPersonales, {
         foreignKey: "id_alumno",
         targetKey: "id"
     });
-  };
-  Resena.associate=(models)=>{
-    Resena.belongsTo(models.DatosPersonales, {
+    Resena.belongsTo(DatosPersonales, {
         foreignKey: "id_profesor",
         targetKey: "id"
     });
-  };
 
 const Kardex = sequelize.define("Kardex", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
@@ -214,12 +226,10 @@ const Kardex = sequelize.define("Kardex", {
     semestres_restantes: {type: DataTypes.INTEGER, allowNull: false}
 }, {tableName: "kardex", timestamps: false});
 
-    Kardex.associate=(models)=>{
-    Kardex.belongsTo(models.DatosPersonales, {
+    Kardex.belongsTo(DatosPersonales, {
         foreignKey: "id_alumno",
         targetKey: "id"
     });
-  };
 
 const UA_Aprobada = sequelize.define("UA_Aprobada", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
@@ -230,12 +240,13 @@ const UA_Aprobada = sequelize.define("UA_Aprobada", {
     metodo_aprobado: {type: DataTypes.STRING(15), allowNull: false}
 }, {tableName: "ua_aprobada", timestamps: false});
 
- UA_Aprobada.associate=(models)=>{
-    UA_Aprobada.belongsTo(models.Kardex, {
+    UA_Aprobada.belongsTo(Kardex, {
         foreignKey: "id_kardex",
         targetKey: "id"
     });
-  };
+
+
+  
 
 async function SincronizarModelo(){
   try{
@@ -273,6 +284,7 @@ module.exports = {
     Inscripcion,
     Resena,
     Kardex,
-    UA_Aprobada
+    UA_Aprobada,
+    Carrera
 
 };

@@ -1,0 +1,390 @@
+// routes/rutaAdministrador.js
+const express = require("express");
+const bd = require("../../model/modelo");
+const { v4: uuidv4 } = require('uuid');
+module.exports = (passport) => {
+  const router = express.Router();
+
+    router.post("/RegistrarAlumno", async(req, res) => {
+        const {creditos_disponibles, nombre, apellido_p, apellido_m, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, numero_ex, numero_in, codigo_postal, colonia, delegacion, ciudad, telefono, correo } = req.body;
+
+        var ano = new Date().getFullYear();
+        var numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
+        var id = String(ano) + String(numeroAleatorio);
+        const contra = uuidv4().replace(/-/g, "").substring(0, 15);
+
+        carr = await bd.Carrera.findOne({
+            where: {nombre: req.body.carreraSeleccionada}
+        });
+        try{
+            const crearAlumno = await bd.DatosPersonales.create({
+            
+            id: id,
+            contrasena: contra,
+            tipo_usuario: "alumno",
+            nombre: nombre,
+            ape_paterno: apellido_p,
+            ape_materno: apellido_m,
+            fecha_nacimiento: fecha_nacimiento,
+            tipo_sangre: tipo_sangre,
+            CURP: CURP,
+            nacionalidad: nacionalidad,
+            calle: calle,
+            num_exterior: numero_ex,
+            num_interior: numero_in,
+            codigo_postal: codigo_postal,
+            colonia: colonia,
+            delegacion: delegacion,
+            ciudad: ciudad,
+            telefono: telefono,
+            email: correo, 
+            carrera: carr.nombre,
+            situacion: "activo"});
+            const id_es = uuidv4().replace(/-/g, "").substring(0, 15);
+            const crearEstudiante = await bd.Estudiante.create({
+
+                id : id_es,
+                id_usuario : crearAlumno.id,
+                promedio : 0,
+                creditos_disponibles : carr.creditos_iniciales,
+                estado_academico : "regular"
+            });
+            console.log("Alumno creado: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al crear el alumno: ", error);
+            res.status(500).json({ success: false, message: "Error al crear el alumno" });
+            return;
+        }
+        
+    });
+
+    router.get("/ObtenerGrupo/:id", async(req,res)=>{
+        const {id} = req.params;
+        try{
+            const grupo = await bd.Grupo.findOne({
+                where: {id: id},
+                raw: true,
+                nest: true
+            });
+            console.log("Grupo obtenido: ", grupo);
+            return res.json({grupo: grupo});
+        }catch(error){
+            console.error("Error al obtener la informacion del grupo: ", error);
+        }  
+    });
+
+    router.put("/EditarGrupo/:id", async(req,res)=>{
+        const {id} = req.body;
+        const {id_prof, id_ua, turno, nombre} = req.body;
+        console.log("Datos recibidos para editar el grupo: ", req.body);
+        console.log("ID del grupo a editar: ", id);
+        console.log("Tipo de ID:", typeof id, "Valor:", id);
+        const id2 = id;
+        let turn = "";
+            if(turno == "Matutino"){
+                turn = "M";
+            }else{turn = "V";}
+
+            const semes = await bd.Unidad_Aprendizaje.findOne({
+                where: {id: id_ua}
+            });
+            let val = await bd.Grupo.count({
+                where: {id_ua: id_ua, turno: turno}
+            });
+            console.log("Valor de val: ", val);
+            const pref = await bd.Carrera.findOne({
+                where: {nombre: semes.carrera}
+            });
+        try{
+            const actualizarGrupo = await bd.Grupo.update({
+                nombre : nombre,
+                id_ua: id_ua,
+                id_prof : id_prof,
+                turno : turno
+            },{where : {id: id2}});
+        
+            console.log("Grupo actualizado: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al actualizar el grupo: ", error);
+        }
+    });
+    router.post("/RegistrarProfesor", async(req, res) => {
+        const {grado, nombre, apellido_p, apellido_m, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, numero_ex, numero_in, codigo_postal, colonia, delegacion, ciudad, telefono, correo, RFC } = req.body;
+        const contra = uuidv4().replace(/-/g, "").substring(0, 15);
+        try{
+
+            const CrearProfesor = await bd.DatosPersonales.create({
+                id:RFC,
+                contrasena: contra,
+                tipo_usuario: "profesor",
+                nombre: nombre,
+                ape_paterno: apellido_p,
+                ape_materno: apellido_m,
+                fecha_nacimiento: fecha_nacimiento,
+                RFC: RFC,
+                tipo_sangre: tipo_sangre,
+                CURP: CURP,
+                nacionalidad: nacionalidad,
+                calle: calle,
+                num_exterior: numero_ex,
+                num_interior: numero_in,
+                codigo_postal: codigo_postal,
+                colonia: colonia,
+                delegacion: delegacion,
+                ciudad: ciudad,
+                telefono: telefono,
+                email: correo,
+                grado: grado,
+                situacion: "activo"
+            });
+            console.log("Profesor creado: ");
+            return res.json({ success: true});
+
+        }catch(error){
+            console.error("Error al crear el profesor: ", error);
+        }
+
+    });
+
+    router.get("/ObtenerProfesores", async(req, res) => {
+
+        try{
+            const profesores = await bd.DatosPersonales.findAll({
+                where: {tipo_usuario: "profesor"},
+            });
+            return res.json({profesores: profesores});
+
+        }catch(error){
+            console.error("Error al obtener los alumnos: ", error);
+        }
+    });
+
+    router.get("/ObtenerAlumno/:id", async(req,res)=>{
+        const {id} = req.params;
+
+        try{    
+            const alumno = await bd.DatosPersonales.findOne({
+                where: {id: id, tipo_usuario: "alumno"},
+                raw: true,
+                nest: true
+            });
+            console.log("Alumno obtenido: ", alumno);
+            return res.json({alumno: alumno});
+
+        }catch(error){
+            console.error("Error al obtener la informacion del alumno: ", error);
+        }
+    });
+
+    router.delete("/EliminarCurso/:id", async(req,res)=>{
+        const {id} = req.params;
+        console.log("ID a eliminar: ", id);
+        try{
+            const eliminar_relacionados = await bd.Distribucion.destroy({
+                where: {id_grupo: id}
+            });
+            const eliminarCurso = await bd.Grupo.destroy({
+                where: {id: id}
+            });
+            console.log("Curso eliminado: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al eliminar el curso: ", error);
+        }
+    });
+    router.get("/ObtenerProfesor/:id", async(req,res)=>{
+        const {id} = req.params;
+        try{    
+            const profesor = await bd.DatosPersonales.findOne({
+                where: {id: id, tipo_usuario: "profesor"},
+                raw: true,
+                nest: true
+            });
+            console.log("Profesor obtenido: ", profesor);
+            return res.json({profesor: profesor});
+        }catch(error){
+            console.error("Error al obtener la informacion del profesor: ", error);
+        }
+    });
+
+    router.put("/EditarAlumno/:id", async(req,res)=>{
+        const {id} = req.params;
+        const {nombre, ape_paterno, ape_materno, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, num_exterior, num_interior, codigo_postal, colonia, delegacion, ciudad, telefono, email, carrera} = req.body;
+        try{
+            const actualizarAlumno = await bd.DatosPersonales.update({
+                nombre: nombre,
+                ape_paterno: ape_paterno,
+                ape_materno: ape_materno,
+                fecha_nacimiento: fecha_nacimiento,
+                tipo_sangre: tipo_sangre,
+                CURP: CURP,
+                nacionalidad: nacionalidad,
+                calle: calle,
+                num_exterior: num_exterior,
+                num_interior: num_interior,
+                codigo_postal: codigo_postal,
+                colonia: colonia,
+                delegacion: delegacion,
+                ciudad: ciudad,
+                telefono: telefono,
+                email: email,
+                carrera: carrera
+            },{
+                where: {id: id, tipo_usuario: "alumno"}
+            });
+            console.log("Alumno actualizado: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al actualizar el alumno: ", error);
+        }
+    });
+    router.put("/EditarProfesor/:id", async(req,res)=>{
+        const {id} = req.params;
+        const {nombre, ape_paterno, ape_materno, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, num_exterior, num_interior, codigo_postal, colonia, delegacion, ciudad, telefono, email, grado, RFC} = req.body;
+        try{
+            const actualizarProfesor = await bd.DatosPersonales.update({
+                nombre: nombre,
+                ape_paterno: ape_paterno,
+                ape_materno: ape_materno,
+                fecha_nacimiento: fecha_nacimiento,
+                tipo_sangre: tipo_sangre,
+                CURP: CURP,
+                nacionalidad: nacionalidad,
+                calle: calle,
+                num_exterior: num_exterior,
+                num_interior: num_interior,
+                codigo_postal: codigo_postal,
+                colonia: colonia,
+                delegacion: delegacion,
+                ciudad: ciudad,
+                telefono: telefono,
+                email: email,
+                grado: grado,
+            },{where: {id: id, tipo_usuario: "profesor"}});
+            console.log("Profesor actualizado: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al actualizar el profesor: ", error);
+        }
+    });
+    router.get("/ObtenerCursos", async(req,res)=>{
+
+        try{
+            const cursos = await bd.Grupo.findAll({
+                include: [                     
+                    {
+
+                        model: bd.DatosPersonales,
+                        atributes :["nombre", "ape_paterno", "ape_materno"]
+                    },
+                    {
+                    
+                        model: bd.Unidad_Aprendizaje,
+                        atributes: ["nombre", "carrera"],
+                     
+                    }
+                ],
+                raw: true,
+                nest: true
+            }); 
+            
+            res.json({cursos: cursos});
+             
+        }catch(error){
+            console.error("Error al obtener los cursos: ", error);
+        }
+    });
+
+    router.get("/ObtenerUA", async(req,res)=>{
+
+        try{
+            const UA = await bd.Unidad_Aprendizaje.findAll();
+            return res.json({UA: UA});
+
+        }catch(error){
+            console.error("Error al obtener las UA: ", error);
+        }
+    });
+
+
+    router.delete("/EliminarAlumno/:id", async(req,res)=>{
+        const {id} = req.params;
+        console.log("ID a eliminar: ", id);
+        try{
+
+            const eliminarAlumno = await bd.DatosPersonales.update({
+                situacion: "inactivo"
+            },{
+                where: {id: id, tipo_usuario: "alumno"}
+            });
+            console.log("Alumno eliminado: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al eliminar el alumno: ", error);
+        }
+    });
+
+    router.delete("/EliminarProfesor/:id", async(req,res)=>{
+        const {id} = req.params;
+        console.log("ID a eliminar: ", id);
+        try{
+            const eliminarProfesor = await bd.DatosPersonales.update({
+                situacion: "inactivo"
+            },{
+                where: {id: id, tipo_usuario: "profesor"}
+            });
+            console.log("Profesor eliminado: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al eliminar el profesor: ", error);
+        }
+    });
+    router.get("/ObtenerCarreras", async(req,res)=>{
+
+        try{
+            const carreras = await bd.Carrera.findAll();
+            return res.json({carreras: carreras});
+
+        }catch(error){
+            console.error("Error al obtener las carreras: ", error);
+        }
+    });
+    router.get("/ObtenerAlumnos", async(req,res)=>{
+        try{
+            const alumnos = await bd.DatosPersonales.findAll({
+                where: {tipo_usuario: "alumno"}
+            });
+            return res.json({alumnos: alumnos});
+        }catch(error){
+            console.error("Error al obtener los alumnos: ", error);
+        }
+    });
+    router.post("/RegistrarCurso", async(req,res)=>{
+        const {id_profesor, id_UA, turno, nombre} = req.body; 
+        try{
+
+
+            const id2 = uuidv4().replace(/-/g, "").substring(0, 15);
+            const crearCurso = await bd.Grupo.create({
+                id: id2,
+                nombre: nombre,
+                id_ua: id_UA,
+                id_prof: id_profesor,
+                turno: turno,
+                cupo: 30
+            });
+            console.log("Curso creado: ");
+            return res.json({ success: true});
+
+        }catch(error){
+            console.error("Error al crear el curso: ", error);
+        }
+
+
+    });
+
+   
+  return router;
+};

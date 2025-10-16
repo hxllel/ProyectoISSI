@@ -49,9 +49,12 @@ create table datos_personales (
     colonia varchar(20) not null,
     delegacion varchar(20) not null,
     telefono varchar(20) not null,
-    email varchar(20) not null,
+    ciudad varchar(20) not null,
+    email varchar(50) not null,
     foto BLOB,
-    grado varchar(20),
+    grado varchar(50),
+    carrera varchar(40),
+    situacion varchar(20),
     CONSTRAINT PK_USUARIOS PRIMARY KEY (id)
 );
 
@@ -84,19 +87,31 @@ create table estudiante (
     CONSTRAINT FK_ES_DP FOREIGN KEY (id_usuario) REFERENCES datos_personales (id)
 );
 
+create table carrera (
+    nombre varchar(40) not null,
+    creditos_iniciales int not null,
+    prefijo_grupo varchar(10) not null,
+    duracion_max int not null,
+    CONSTRAINT PK_CAR PRIMARY KEY (nombre)
+);
+
 create table unidad_de_aprendizaje (
     id varchar(15) not null,
     nombre varchar(25) not null,
     credito float not null,
     carrera varchar(50),
     semestre int not null,
-    CONSTRAINT PK_UA PRIMARY KEY (id)
+    CONSTRAINT PK_UA PRIMARY KEY (id),
+    CONSTRAINT FK_UA_CAR FOREIGN KEY (carrera) REFERENCES carrera (nombre)
 );
 
 create table grupo (
     id varchar(15) not null,
+    nombre varchar(25) not null,
     id_ua varchar(15) not null,
     id_prof varchar(15) not null,
+    turno varchar(15) not null,
+    cupo int not null,
     CONSTRAINT PK_GRU PRIMARY KEY (id),
     CONSTRAINT FK_GRU_DP FOREIGN KEY (id_prof) REFERENCES datos_personales (id),
     CONSTRAINT FK_GRU_UA FOREIGN KEY (id_ua) REFERENCES unidad_de_aprendizaje (id)
@@ -170,7 +185,7 @@ create table ua_aprobada (
     CONSTRAINT FK_UAA_KAR FOREIGN KEY (id_kardex) REFERENCES kardex (id)
 );
 
-insert into
+INSERT INTO
     datos_personales (
         id,
         contrasena,
@@ -189,13 +204,16 @@ insert into
         codigo_postal,
         colonia,
         delegacion,
+        ciudad,
         telefono,
-        email
+        email,
+        grado,
+        situacion
     )
 VALUES (
         '2023635321',
         'primeraprueba',
-        'alumno',
+        'administrador',
         'juan',
         'perez',
         'gonzales',
@@ -210,6 +228,63 @@ VALUES (
         '12345',
         'juarez',
         'tlalpan',
+        'CDMX',
         '123456',
-        'juan_perez@gmail.com'
+        'juan_perez@gmail.com',
+        'n/a',
+        'activo'
+    ),
+    (
+        'HIJKLMNO',
+        'segundaprueba',
+        'profesor',
+        'maria',
+        'lopez',
+        'martinez',
+        '1980-11-15',
+        'HIJKLMNO',
+        'A+',
+        'HIJKLMNO',
+        'mexicana',
+        'revolucion',
+        '45',
+        'n/a',
+        '67890',
+        'centro',
+        'coyoacan',
+        'CDMX',
+        '654321',
+        'maria_lopez@gmail.com',
+        'doctorado en ciencias',
+        'activo'
+    );
+
+insert into
+    carrera (
+        nombre,
+        creditos_iniciales,
+        prefijo_grupo,
+        duracion_max
+    )
+values (
+        'Ingenieria en Sistemas Computacionales',
+        25,
+        'B',
+        10
+    );
+
+insert into
+    unidad_de_aprendizaje (
+        id,
+        nombre,
+        credito,
+        carrera,
+        semestre
+    )
+values (
+        'UA001',
+        'Matematicas Discretas',
+        8,
+        'Ingenieria en Sistemas Computacionales',
+        1
     );
