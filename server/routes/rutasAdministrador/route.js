@@ -242,7 +242,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
       },
     });
 
-    // 4️⃣ Validar traslape de horarios
+    //  Validar traslape de horarios
     const conflicto = distribuciones.some((dist) => {
       // Convertimos a minutos para comparar fácilmente
       const [ini1h, ini1m] = dist.hora_ini.split(":").map(Number);
