@@ -2,6 +2,7 @@
 const express = require("express");
 const bd = require("../../model/modelo");
 const { v4: uuidv4 } = require('uuid');
+const { Op } = require("sequelize");
 module.exports = (passport) => {
   const router = express.Router();
 
@@ -194,6 +195,93 @@ module.exports = (passport) => {
             console.error("Error al eliminar el curso: ", error);
         }
     });
+
+
+    router.get("/ObtenerDist/:id", async(req,res)=>{
+        const {id} = req.params;
+        try{
+            const distribucion = await bd.Distribucion.findAll({
+                where: {id_grupo: id},
+                raw: true,
+                nest: true
+            });
+            return res.json({Distri: distribucion});
+        }catch(error){
+            console.error("Error al obtener la distribucion: ", error);
+        }
+    });
+
+
+router.post("/AgregarDist/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { id_grupo, dia, hora_ini, hora_fin } = req.body;
+
+    console.log(dia, hora_ini, hora_fin);
+
+    const grupoActual = await bd.Grupo.findOne({
+      where: { id: id_grupo },
+    });
+
+    if (!grupoActual) {
+      return res.json({ success: false, message: "Grupo no encontrado" });
+    }
+
+    const gruposMismoNombre = await bd.Grupo.findAll({
+      where: { nombre: grupoActual.nombre },
+      attributes: ["id"], // solo necesitamos los ids
+    });
+
+    const idsGrupos = gruposMismoNombre.map((g) => g.id);
+
+    // 3️⃣ Buscar distribuciones de esos grupos en el mismo día
+    const distribuciones = await bd.Distribucion.findAll({
+      where: {
+        id_grupo: { [Op.in]: idsGrupos },
+        dia: dia,
+      },
+    });
+
+    // 4️⃣ Validar traslape de horarios
+    const conflicto = distribuciones.some((dist) => {
+      // Convertimos a minutos para comparar fácilmente
+      const [ini1h, ini1m] = dist.hora_ini.split(":").map(Number);
+      const [fin1h, fin1m] = dist.hora_fin.split(":").map(Number);
+      const [ini2h, ini2m] = hora_ini.split(":").map(Number);
+      const [fin2h, fin2m] = hora_fin.split(":").map(Number);
+
+      const ini1 = ini1h * 60 + ini1m;
+      const fin1 = fin1h * 60 + fin1m;
+      const ini2 = ini2h * 60 + ini2m;
+      const fin2 = fin2h * 60 + fin2m;
+
+      // hay traslape si se intersectan los intervalos
+      return ini2 < fin1 && fin2 > ini1;
+    });
+
+    if (conflicto) {
+      return res.json({
+        success: false,
+        message: "Horario ocupado: ya existe una distribución que se traslapa.",
+      });
+    }
+
+    const id2 = uuidv4().replace(/-/g, "").substring(0, 15);
+    await bd.Distribucion.create({
+      id: id2, 
+      id_grupo : id_grupo,
+      dia : dia,
+      hora_ini : hora_ini,
+      hora_fin : hora_fin,
+    });
+
+    res.json({ success: true, message: "Distribución agregada correctamente" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Error en el servidor" });
+  }
+});
+
     router.get("/ObtenerProfesor/:id", async(req,res)=>{
         const {id} = req.params;
         try{    
@@ -238,6 +326,20 @@ module.exports = (passport) => {
             return res.json({ success: true});
         }catch(error){
             console.error("Error al actualizar el alumno: ", error);
+        }
+    });
+
+    router.delete("/EliminarDist/:id", async(req,res)=>{
+        const {id} = req.params;
+        console.log("ID a eliminar: ", id);
+        try{
+            const eliminarDist = await bd.Distribucion.destroy({
+                where: {id: id}
+            });
+            console.log("Distribucion eliminada: ");
+            return res.json({ success: true});
+        }catch(error){
+            console.error("Error al eliminar la distribucion: ", error);
         }
     });
     router.put("/EditarProfesor/:id", async(req,res)=>{

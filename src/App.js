@@ -14,10 +14,12 @@ import { GestionarCursos } from './components/GestionarCursos';
 import { EditarAlumnos } from './components/EditarAlumnos';
 import { EditarProfesores } from './components/EditarProfesores';
 import { EditarGrupo } from './components/EditarGrupo';
+import { Distribucion } from './components/Distribucion';
 function App() {
   const [success, setSuccess] = useState("");
 
   return (
+    <div className='App'>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={
@@ -46,9 +48,12 @@ function App() {
         <Route path="administrador/gestionarAlumnos/editarAlumno/:id" element={<EditarAlumnos />} />
         <Route path="administrador/gestionarProfesores/editarProfesor/:id" element={<EditarProfesores />} />
         <Route path="administrador/gestionarCursos/editarCurso/:id" element={<EditarGrupo />} />
+        <Route path="administrador/gestionarCursos/distribucionHorarios/:id" element={<Distribucion />} />
 
       </Routes>
     </BrowserRouter>
+  </div>
+    
   );
 }
 

@@ -30,6 +30,8 @@ DROP TABLE IF EXISTS kardex;
 
 DROP TABLE IF EXISTS ua_aprobada;
 
+DROP TABLE IF EXISTS borrador_horario;
+
 create table datos_personales (
     id varchar(15) not null,
     contrasena varchar(20) not null,
@@ -120,7 +122,8 @@ create table grupo (
 create table distribucion (
     id varchar(15) not null,
     id_grupo varchar(15) not null,
-    hora varchar(15) not null,
+    hora_ini varchar(15) not null,
+    hora_fin varchar(15) not null,
     dia varchar(15) not null,
     CONSTRAINT PK_DIS PRIMARY KEY (id),
     CONSTRAINT FK_DIS_GRU FOREIGN KEY (id_grupo) REFERENCES grupo (id)
@@ -183,6 +186,25 @@ create table ua_aprobada (
     metodo_aprobado varchar(15) not null,
     CONSTRAINT PK_UAA PRIMARY KEY (id),
     CONSTRAINT FK_UAA_KAR FOREIGN KEY (id_kardex) REFERENCES kardex (id)
+);
+
+create table borrador_horario (
+    id varchar(15) not null,
+    id_grupo varchar(15) not null,
+    id_alumno varchar(15) not null,
+    id_profesor varchar(15) not null,
+    nombre varchar(25) not null,
+    materia varchar(25) not null,
+    horas_lun varchar(20) not null,
+    horas_mar varchar(20) not null,
+    horas_mie varchar(20) not null,
+    horas_jue varchar(20) not null,
+    horas_vie varchar(20) not null,
+    creditos_necesarios float not null,
+    CONSTRAINT PK_BOR PRIMARY KEY (id),
+    CONSTRAINT FK_BOR_DP FOREIGN KEY (id_alumno) REFERENCES datos_personales (id),
+    CONSTRAINT FK_BOR_PRO FOREIGN KEY (id_profesor) REFERENCES datos_personales (id),
+    CONSTRAINT FK_BOR_GRU FOREIGN KEY (id_grupo) REFERENCES grupo (id)
 );
 
 INSERT INTO

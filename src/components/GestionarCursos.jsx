@@ -21,6 +21,9 @@ export function GestionarCursos() {
     const handleEdit = (id) => {
         navigate(`editarCurso/${id}`);
     }
+    const handleClickDis = (id) => {
+        navigate(`distribucionHorarios/${id}`);
+    }
 
     const handleClickDelete = () => {
         setDelete(true);
@@ -55,7 +58,8 @@ export function GestionarCursos() {
     return (
         <section>
             <h1>Gestionar Cursos</h1>
-            <button onClick={handleClickCur}>Registrar Curso</button>
+            <button onClick={handleClickCur}>Registrar Grupo</button>
+            <button>Importar csv</button>
             <table border="1" cellPadding={5}>
                 <thead>
                     <tr>
@@ -78,6 +82,7 @@ export function GestionarCursos() {
                             <td>
                                 <button onClick={() => handleEdit(dato.id)}>Editar</button>
                                 <button onClick={() => handleAbrirModal(dato.id)}>Eliminar</button>
+                                <button onClick={() => handleClickDis(dato.id)}>Gestionar distribucion</button>
                             </td>
                         </tr>
                     ))}

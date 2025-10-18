@@ -144,7 +144,8 @@ Grupo.belongsTo(DatosPersonales, {
   const Distribucion = sequelize.define("Distribucion", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
     id_grupo: { type: DataTypes.STRING(15), allowNull: false},
-    hora : {type: DataTypes.STRING(15), allowNull: false},
+    hora_ini : {type: DataTypes.STRING(15), allowNull: false},
+    hora_fin : {type: DataTypes.STRING(15), allowNull: false},
     dia : {type: DataTypes.STRING(15), allowNull: false}
   }, {tableName: "distribucion", timestamps: false});
 
@@ -246,6 +247,34 @@ const UA_Aprobada = sequelize.define("UA_Aprobada", {
     });
 
 
+    const Borrador_Horario = sequelize.define("Borrador_Horario", {
+        id: { type: DataTypes.STRING(15), primaryKey: true },
+        id_grupo : { type: DataTypes.STRING(15), allowNull: false},
+        id_alumno : {type: DataTypes.STRING(15), allowNull: false},
+        id_profesor : {type: DataTypes.STRING(15), allowNull: false},
+        nombre : {type: DataTypes.STRING(25), allowNull: false},
+        materia : {type: DataTypes.STRING(25), allowNull: false},
+        dia: {type: DataTypes.STRING(15), allowNull: false},
+        hora_lun: {type: DataTypes.STRING(20), allowNull: false},
+        hora_mar: {type: DataTypes.STRING(20), allowNull: false},
+        hora_mie: {type: DataTypes.STRING(20), allowNull: false},
+        hora_jue: {type: DataTypes.STRING(20), allowNull: false},
+        hora_vie: {type: DataTypes.STRING(20), allowNull: false},
+        creditos_necesarios: {type: DataTypes.FLOAT, allowNull: false},
+      }, {tableName : "borrador_horario", timestamps:false});
+
+      Borrador_Horario.belongsTo(DatosPersonales, {
+        foreignKey: "id_alumno",
+        targetKey: "id"
+    });
+    Borrador_Horario.belongsTo(DatosPersonales, {
+        foreignKey: "id_profesor",
+        targetKey: "id"
+    });
+    Borrador_Horario.belongsTo(Grupo, {
+        foreignKey: "id_grupo",
+        targetKey: "id"
+    });
   
 
 async function SincronizarModelo(){
@@ -263,6 +292,7 @@ async function SincronizarModelo(){
     await Resena.sync();
     await Kardex.sync();
     await UA_Aprobada.sync();
+    await Borrador_Horario.sync();
     console.log("Los modelos fueron sincronizados correctamente");
 
   }catch(err){
@@ -285,6 +315,7 @@ module.exports = {
     Resena,
     Kardex,
     UA_Aprobada,
-    Carrera
+    Carrera,
+    Borrador_Horario
 
 };
