@@ -234,7 +234,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
 
     const idsGrupos = gruposMismoNombre.map((g) => g.id);
 
-    // 3️⃣ Buscar distribuciones de esos grupos en el mismo día
+    //  Buscar distribuciones de esos grupos en el mismo día
     const distribuciones = await bd.Distribucion.findAll({
       where: {
         id_grupo: { [Op.in]: idsGrupos },
