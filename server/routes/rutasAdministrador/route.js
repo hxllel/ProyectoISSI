@@ -250,6 +250,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
 
     const idsGrupos = gruposMismoNombre.map((g) => g.id);
 
+    //  Buscar distribuciones de esos grupos en el mismo día
     const distribuciones = await bd.Distribucion.findAll({
       where: {
         id_grupo: { [Op.in]: idsGrupos },
@@ -257,6 +258,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
       },
     });
 
+    //  Validar traslape de horarios
     const conflicto = distribuciones.some((dist) => {
       // Convertimos a minutos para comparar fácilmente
       const [ini1h, ini1m] = dist.hora_ini.split(":").map(Number);
