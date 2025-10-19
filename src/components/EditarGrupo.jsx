@@ -17,7 +17,7 @@ export function EditarGrupo() {
 
 
     useEffect(() => {
-        fetch("http://localhost:4000/ObtenerProfesores")
+        fetch("http://localhost:4000/ObtenerProfesores", { credentials: "include", })
             .then((res) => res.json())
             .then((data) => setProfesores(data.profesores))
             .catch((err) => console.error("Error al obtener los profesores:", err));

@@ -1,22 +1,23 @@
 import "./Formulario.css";
 import { useState } from "react";
 
-export function Formulario({ setSuccess }) {
-    const [usuario, setUsuario] = useState("");
+export function Formulario({ setSuccess, setId2 }) {
+    const [id, setId] = useState(""); // Cambiado de 'usuario' a 'id'
     const [contrasena, setContrasena] = useState("");
     const [error, setError] = useState(false);
-    const [error2, setError2] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(""); // Para mensajes de error del backend
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (usuario === "" || contrasena === "") {
+        if (id === "" || contrasena === "") {
             setError(true);
-            setError2(false);
+            setErrorMessage("Todos los campos son obligatorios");
             return;
         }
 
         setError(false);
+        setErrorMessage("");
 
         try {
             const res = await fetch("http://localhost:4000/IniciarSesion", {
@@ -25,34 +26,28 @@ export function Formulario({ setSuccess }) {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ usuario, contrasena, remember: true }),
+                body: JSON.stringify({ id, contrasena, remember: true }), // Enviar 'id' en lugar de 'usuario'
             });
 
-            const text = await res.text();
-            console.log("respuesta del servidor:", text);
+            const data = await res.json(); // La respuesta ya es JSON
+            console.log("Respuesta del servidor:", data);
 
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (error) {
-                console.error("No es JSON válido:", error);
-            }
-
-            if (data?.success) {
-                const tip = data.nivel_acceso;
+            if (data.success) {
+                const tip = data.tipo_usuario;
+                const userId = data.id;
+                setId2(userId);
                 setSuccess(tip);
             } else {
-                setError2(true);
+                setErrorMessage(data.message || "Usuario o contraseña incorrectos");
             }
         } catch (err) {
             console.error("Error al conectar con el servidor:", err);
-            setError2(true);
+            setErrorMessage("Error al conectar con el servidor");
         }
     };
 
     return (
         <div className="login-layout">
-            {/* Logos laterales */}
             <aside className="brand-left">
                 <img src="/ipn.png" alt="IPN" />
             </aside>
@@ -65,13 +60,13 @@ export function Formulario({ setSuccess }) {
 
                 <form className="form" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="usuario">Usuario</label>
+                        <label htmlFor="id">Usuario</label> {/* Cambiado de 'usuario' a 'id' */}
                         <input
-                            id="usuario"
+                            id="id"
                             type="text"
-                            placeholder="Escribe tu usuario"
-                            value={usuario}
-                            onChange={(e) => setUsuario(e.target.value)}
+                            placeholder="Escribe tu ID"
+                            value={id}
+                            onChange={(e) => setId(e.target.value)}
                             autoComplete="username"
                         />
                     </div>
@@ -88,13 +83,8 @@ export function Formulario({ setSuccess }) {
                         />
                     </div>
 
-                    {error && (
-                        <p className="alert alert-warn">Todos los campos son obligatorios</p>
-                    )}
-                    {error2 && (
-                        <p className="alert alert-error">
-                            Usuario o contraseña incorrectos
-                        </p>
+                    {(error || errorMessage) && (
+                        <p className="alert alert-error">{errorMessage}</p>
                     )}
 
                     <button type="submit" className="btn">
