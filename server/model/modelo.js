@@ -1,5 +1,6 @@
 const{DataTypes} = require("sequelize");
 const{Sequelize} = require("sequelize");
+const bcrypt = require("bcryptjs");
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -25,7 +26,7 @@ const sequelize = new Sequelize({
 
 const DatosPersonales = sequelize.define("DatosPersonales", {
     id: { type: DataTypes.STRING(15), primaryKey: true },
-    contrasena: { type: DataTypes.STRING(20), allowNull: false },
+    contrasena: { type: DataTypes.STRING(200), allowNull: false },
     tipo_usuario: { type: DataTypes.STRING(15), allowNull: false },
     nombre: { type: DataTypes.STRING(25), allowNull: false },
     ape_paterno: { type: DataTypes.STRING(25), allowNull: false },
@@ -47,7 +48,8 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     foto: { type: DataTypes.BLOB},
     grado: { type: DataTypes.STRING(50) },
     carrera: { type: DataTypes.STRING(40) },
-    situacion:{ type: DataTypes.STRING(20) }
+    situacion:{ type: DataTypes.STRING(20) },
+    calificacion:{ type: DataTypes.INTEGER }
   }, { tableName: "datos_personales", timestamps: false });
 
  
@@ -261,6 +263,7 @@ const UA_Aprobada = sequelize.define("UA_Aprobada", {
         hora_jue: {type: DataTypes.STRING(20), allowNull: false},
         hora_vie: {type: DataTypes.STRING(20), allowNull: false},
         creditos_necesarios: {type: DataTypes.FLOAT, allowNull: false},
+        valido :  {type: DataTypes.BOOLEAN, allowNull: false, defaultValue:true}
       }, {tableName : "borrador_horario", timestamps:false});
 
       Borrador_Horario.belongsTo(DatosPersonales, {
@@ -299,6 +302,22 @@ async function SincronizarModelo(){
     console.error("Error al sincronizar", err);
   }
 }
+
+DatosPersonales.prototype.validPassword = async function (password) {
+  console.log("Intentando validar contraseña:", password);
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  console.log("Contraseña hasheada:", hashedPassword);
+  console.log("Hash almacenado:", this.contrasena);
+  try {
+    const result = bcrypt.compareSync(password, this.contrasena);
+    console.log("Resultado de la comparación:", result);
+    return result;
+  } catch (error) {
+    console.error("Error al validar contraseña:", error);
+    return false;
+  }
+};
 SincronizarModelo();
 module.exports = {
     sequelize,

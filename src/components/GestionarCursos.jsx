@@ -12,7 +12,7 @@ export function GestionarCursos() {
     }
 
     useEffect(() => {
-        fetch("http://localhost:4000/ObtenerCursos")
+        fetch("http://localhost:4000/ObtenerCursos", { credentials: "include", })
             .then((res) => res.json())
             .then((data) => setDatos(data.cursos))
             .catch((err) => console.error("Error al obtener los cursos:", err));
@@ -39,6 +39,7 @@ export function GestionarCursos() {
         if (del) {
             fetch(`http://localhost:4000/EliminarCurso/${id_datos}`, {
                 method: "DELETE",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
             })
                 .then(res => res.json())

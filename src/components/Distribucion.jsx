@@ -22,7 +22,7 @@ export function Distribucion() {
 
 
     useEffect(() => {
-        fetch(`http://localhost:4000/ObtenerDist/${id}`)
+        fetch(`http://localhost:4000/ObtenerDist/${id}`, { credentials: "include", })
             .then(res => res.json())
             .then(data => {
                 if (data.Distri) setDistri(data.Distri);
@@ -34,6 +34,7 @@ export function Distribucion() {
         e.preventDefault();
         const res = fetch(`http://localhost:4000/AgregarDist/${id}`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id_grupo: id, dia, hora_ini, hora_fin }),
         }).then(res => res.json()).then(data => {
@@ -59,6 +60,7 @@ export function Distribucion() {
         if (del) {
             fetch(`http://localhost:4000/EliminarDist/${id_delete}`, {
                 method: "DELETE",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
             })
                 .then(res => res.json())

@@ -3,6 +3,7 @@ const express = require("express");
 const bd = require("../../model/modelo");
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require("sequelize");
+const bcrypt = require("bcryptjs");
 module.exports = (passport) => {
   const router = express.Router();
 
@@ -13,15 +14,18 @@ module.exports = (passport) => {
         var numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
         var id = String(ano) + String(numeroAleatorio);
         const contra = uuidv4().replace(/-/g, "").substring(0, 15);
+        console.log(contra);
 
         carr = await bd.Carrera.findOne({
             where: {nombre: req.body.carreraSeleccionada}
         });
+        const salt = await bcrypt.genSalt(10);
+        const contraHashed = await bcrypt.hash(contra, salt);
         try{
             const crearAlumno = await bd.DatosPersonales.create({
             
             id: id,
-            contrasena: contra,
+            contrasena: contraHashed,
             tipo_usuario: "alumno",
             nombre: nombre,
             ape_paterno: apellido_p,
@@ -50,6 +54,17 @@ module.exports = (passport) => {
                 creditos_disponibles : carr.creditos_iniciales,
                 estado_academico : "regular"
             });
+            const crearHorario = await bd.Horario.create({
+                id : uuidv4().replace(/-/g, "").substring(0, 15),
+                id_alumno : id
+            });
+            const crearKardex = await bd.Kardex.create({
+                id : uuidv4().replace(/-/g, "").substring(0, 15),
+                id_alumno : id,
+                promedio : 0,
+                situacion_academica : "regular",
+                semestres_restantes : carr.duracion_max
+            });
             console.log("Alumno creado: ");
             return res.json({ success: true});
         }catch(error){
@@ -60,6 +75,7 @@ module.exports = (passport) => {
         
     });
 
+    
     router.get("/ObtenerGrupo/:id", async(req,res)=>{
         const {id} = req.params;
         try{
@@ -75,7 +91,7 @@ module.exports = (passport) => {
         }  
     });
 
-    router.put("/EditarGrupo/:id", async(req,res)=>{
+    router.put("/EditarGrupo/:id",  async(req,res)=>{
         const {id} = req.body;
         const {id_prof, id_ua, turno, nombre} = req.body;
         console.log("Datos recibidos para editar el grupo: ", req.body);
@@ -111,7 +127,7 @@ module.exports = (passport) => {
             console.error("Error al actualizar el grupo: ", error);
         }
     });
-    router.post("/RegistrarProfesor", async(req, res) => {
+    router.post("/RegistrarProfesor",  async(req, res) => {
         const {grado, nombre, apellido_p, apellido_m, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, numero_ex, numero_in, codigo_postal, colonia, delegacion, ciudad, telefono, correo, RFC } = req.body;
         const contra = uuidv4().replace(/-/g, "").substring(0, 15);
         try{
@@ -150,7 +166,7 @@ module.exports = (passport) => {
     });
 
     router.get("/ObtenerProfesores", async(req, res) => {
-
+        
         try{
             const profesores = await bd.DatosPersonales.findAll({
                 where: {tipo_usuario: "profesor"},
@@ -284,6 +300,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
 
     router.get("/ObtenerProfesor/:id", async(req,res)=>{
         const {id} = req.params;
+        
         try{    
             const profesor = await bd.DatosPersonales.findOne({
                 where: {id: id, tipo_usuario: "profesor"},
@@ -297,7 +314,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
         }
     });
 
-    router.put("/EditarAlumno/:id", async(req,res)=>{
+    router.put("/EditarAlumno/:id",  async(req,res)=>{
         const {id} = req.params;
         const {nombre, ape_paterno, ape_materno, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, num_exterior, num_interior, codigo_postal, colonia, delegacion, ciudad, telefono, email, carrera} = req.body;
         try{
@@ -453,7 +470,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
             console.error("Error al obtener las carreras: ", error);
         }
     });
-    router.get("/ObtenerAlumnos", async(req,res)=>{
+    router.get("/ObtenerAlumnos",  async(req,res)=>{
         try{
             const alumnos = await bd.DatosPersonales.findAll({
                 where: {tipo_usuario: "alumno"}
@@ -463,15 +480,26 @@ router.post("/AgregarDist/:id", async (req, res) => {
             console.error("Error al obtener los alumnos: ", error);
         }
     });
-    router.post("/RegistrarCurso", async(req,res)=>{
-        const {id_profesor, id_UA, turno, nombre} = req.body; 
-        try{
 
+    router.post("/RegistrarCurso",   async(req,res)=>{
+        const {id_profesor, id_UA, turno, nombre,carrera } = req.body; 
+        try{
+            let t = "";
+            if(turno == "Matutino"){
+                t = "M"
+            }else{ t = "V"}
 
             const id2 = uuidv4().replace(/-/g, "").substring(0, 15);
+            const carr = await bd.Carrera.findOne({
+                where: {nombre : carrera}
+            });
+            const ua = await bd.Unidad_Aprendizaje.findOne({
+                where: {id : id_UA}
+            });
+            let name2 = String(ua.semestre) + String(carr.prefijo_grupo) + String(t) + String(nombre);
             const crearCurso = await bd.Grupo.create({
                 id: id2,
-                nombre: nombre,
+                nombre: name2,
                 id_ua: id_UA,
                 id_prof: id_profesor,
                 turno: turno,
@@ -490,3 +518,8 @@ router.post("/AgregarDist/:id", async (req, res) => {
    
   return router;
 };
+
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.redirect("/");
+}

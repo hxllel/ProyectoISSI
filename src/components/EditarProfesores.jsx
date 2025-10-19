@@ -28,7 +28,7 @@ export function EditarProfesores() {
     });
 
     useEffect(() => {
-        fetch(`http://localhost:4000/ObtenerProfesor/${id}`)
+        fetch(`http://localhost:4000/ObtenerProfesor/${id}`, { credentials: "include", })
             .then(res => res.json())
             .then(data => {
                 if (data.profesor) setProfesor(data.profesor);
@@ -47,6 +47,7 @@ export function EditarProfesores() {
 
         fetch(`http://localhost:4000/EditarProfesor/${id}`, {
             method: "PUT",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(profesor),
         })

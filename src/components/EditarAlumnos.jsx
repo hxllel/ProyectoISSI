@@ -28,7 +28,7 @@ export function EditarAlumnos() {
     const [carreras, setCarreras] = useState([]);
 
     useEffect(() => {
-        fetch(`http://localhost:4000/ObtenerAlumno/${id}`)
+        fetch(`http://localhost:4000/ObtenerAlumno/${id}`, { credentials: "include", })
             .then(res => res.json())
             .then(data => {
                 if (data.alumno) setAlumno(data.alumno);

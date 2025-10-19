@@ -4,31 +4,27 @@ const SAES = require("../model/modelo");
 module.exports=function(passport){
     const router = express.Router();
 
-    router.post("/IniciarSesion", async(req,res, next)=>{
-        const {usuario, contrasena, remember} = req.body;
-        console.log("Usuario: ", usuario);
-        console.log("Contraseña: ", contrasena)
-        
-        const us = await SAES.DatosPersonales.findOne({
-            where: {id : usuario}});
+    router.post(
+    "/IniciarSesion",
+    passport.authenticate("local-login", { failureFlash: true }), 
+    (req, res) => {
+      const user = req.user;
 
+      if (req.body.remember) {
+        req.session.cookie.maxAge = 1000 * 60 * 60 * 3; // 3 horas
+      } else {
+        req.session.cookie.expires = false; 
+      }
 
-        if(us != null){
-            if(contrasena == us.contrasena){
-                console.log("nivel de acceso: ", us.tipo_usuario);
-                return res.json({
-                    success: true,
-                    nivel_acceso : us.tipo_usuario
-                });
-            }
-            else{
-                return res.json({
-                    success: false,
-                    nivel_acceso: null
-                })
-            }
-        }
-    });
+      if (user.tipo_usuario === "alumno") {
+        return res.json({ success: true, tipo_usuario: "alumno", id: user.id });
+      } else if (user.tipo_usuario === "profesor") {
+        return res.json({ success: true, tipo_usuario: "profesor", id: user.id });
+      } else {
+        return res.json({ success: true, tipo_usuario: "administrador", id: user.id });
+      }
+    }
+  );
 
     return router;
 }

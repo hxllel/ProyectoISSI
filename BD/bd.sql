@@ -34,7 +34,7 @@ DROP TABLE IF EXISTS borrador_horario;
 
 create table datos_personales (
     id varchar(15) not null,
-    contrasena varchar(20) not null,
+    contrasena varchar(200) not null,
     tipo_usuario varchar(15) not null,
     nombre varchar(25) not null,
     ape_paterno varchar(25) not null,
@@ -57,6 +57,7 @@ create table datos_personales (
     grado varchar(50),
     carrera varchar(40),
     situacion varchar(20),
+    calificacion int,
     CONSTRAINT PK_USUARIOS PRIMARY KEY (id)
 );
 
@@ -201,6 +202,7 @@ create table borrador_horario (
     horas_jue varchar(20) not null,
     horas_vie varchar(20) not null,
     creditos_necesarios float not null,
+    valido BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT PK_BOR PRIMARY KEY (id),
     CONSTRAINT FK_BOR_DP FOREIGN KEY (id_alumno) REFERENCES datos_personales (id),
     CONSTRAINT FK_BOR_PRO FOREIGN KEY (id_profesor) REFERENCES datos_personales (id),
@@ -234,7 +236,7 @@ INSERT INTO
     )
 VALUES (
         '2023635321',
-        'primeraprueba',
+        '$2b$10$FVM7xU.TbCeLwfOmDq1QeeF0DCu6FlpuS8f.hqSL55HmZojG1ZbNG',
         'administrador',
         'juan',
         'perez',
@@ -258,7 +260,7 @@ VALUES (
     ),
     (
         'HIJKLMNO',
-        'segundaprueba',
+        '$2b$10$FVM7xU.TbCeLwfOmDq1QeeF0DCu6FlpuS8f.hqSL55HmZojG1ZbNG',
         'profesor',
         'maria',
         'lopez',
@@ -291,8 +293,20 @@ insert into
 values (
         'Ingenieria en Sistemas Computacionales',
         25,
+        'A',
+        12
+    ),
+    (
+        'Ingenieria en Inteligencia Artificial',
+        25,
         'B',
-        10
+        12
+    ),
+    (
+        'Ingenieria en Ciencia de Datos',
+        25,
+        'C',
+        12
     );
 
 insert into
@@ -308,5 +322,33 @@ values (
         'Matematicas Discretas',
         8,
         'Ingenieria en Sistemas Computacionales',
+        1
+    ),
+    (
+        'UA002',
+        'Programacion I',
+        8,
+        'Ingenieria en Sistemas Computacionales',
+        1
+    ),
+    (
+        'UA003',
+        'Calculo',
+        8,
+        'Ingenieria en Sistemas Computacionales',
+        1
+    ),
+    (
+        'UA004',
+        'Calculo',
+        8,
+        'Ingenieria en Inteligencia Artificial',
+        1
+    ),
+    (
+        'UA005',
+        'Matematicas Discretas',
+        8,
+        'Ingenieria en Inteligencia Artificial',
         1
     );

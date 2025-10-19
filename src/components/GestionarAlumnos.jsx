@@ -28,7 +28,7 @@ export function GestionarAlumnos() {
 
 
     useEffect(() => {
-        fetch("http://localhost:4000/ObtenerAlumnos")
+        fetch("http://localhost:4000/ObtenerAlumnos", { credentials: "include", })
             .then((res) => {
                 if (!res.ok) {
                     throw new Error(`Error ${res.status}: ${res.statusText}`);
@@ -49,6 +49,7 @@ export function GestionarAlumnos() {
         if (del) {
             fetch(`http://localhost:4000/EliminarAlumno/${id_alumno}`, {
                 method: "DELETE",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
             })
                 .then(res => res.json())

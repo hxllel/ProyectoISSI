@@ -15,8 +15,10 @@ import { EditarAlumnos } from './components/EditarAlumnos';
 import { EditarProfesores } from './components/EditarProfesores';
 import { EditarGrupo } from './components/EditarGrupo';
 import { Distribucion } from './components/Distribucion';
+import { Inscripcion } from './components/Inscripcion';
 function App() {
   const [success, setSuccess] = useState("");
+  const [id2, setId2] = useState("");
 
   return (
     <div className='App'>
@@ -24,18 +26,18 @@ function App() {
       <Routes>
         <Route path="/" element={
           !success ? (
-            <Formulario setSuccess={setSuccess} />
+            <Formulario setSuccess={setSuccess} setId2={setId2} />
           ) : success === "alumno" ? (
-            <Alumno />
+            <Navigate to={`/alumno/${id2}`} replace />
           ) : success === "administrador" ? (
-            <Navigate to="/administrador" replace />
+              <Navigate to="/administrador" replace />
           ) : success === "profesor" ? (
-            <Profesor />
+             <Navigate to={`/profesor/${id2}`} replace />
           ) : (
             <p>Tipo de usuario no reconocido.</p>
           )
         } />
-        <Route path="/alumno" element={<Alumno />} />
+        <Route path="/alumno/:id" element={<Alumno />} />
 
         <Route path="/administrador" element={<Administrador />} />
         <Route path="/profesor" element={<Profesor />} />
@@ -49,7 +51,7 @@ function App() {
         <Route path="administrador/gestionarProfesores/editarProfesor/:id" element={<EditarProfesores />} />
         <Route path="administrador/gestionarCursos/editarCurso/:id" element={<EditarGrupo />} />
         <Route path="administrador/gestionarCursos/distribucionHorarios/:id" element={<Distribucion />} />
-
+        <Route path ="alumno/inscripcion/:id" element={<Inscripcion />} />
       </Routes>
     </BrowserRouter>
   </div>

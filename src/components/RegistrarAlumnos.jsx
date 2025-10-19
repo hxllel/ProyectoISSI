@@ -25,7 +25,7 @@ export function RegistrarAlumnos() {
     const [carreraSeleccionada, setCarreraSeleccionada] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:4000/ObtenerCarreras")
+        fetch("http://localhost:4000/ObtenerCarreras", { credentials: "include", })
             .then((res) => res.json())
             .then((data) => {
                 console.log("Datos recibidos:", data);
