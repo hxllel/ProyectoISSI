@@ -232,7 +232,8 @@ INSERT INTO
         telefono,
         email,
         grado,
-        situacion
+        situacion,
+        calificacion
     )
 VALUES (
         '2023635321',
@@ -256,7 +257,8 @@ VALUES (
         '123456',
         'juan_perez@gmail.com',
         'n/a',
-        'activo'
+        'activo',
+        '10'
     ),
     (
         'HIJKLMNO',
@@ -280,7 +282,8 @@ VALUES (
         '654321',
         'maria_lopez@gmail.com',
         'doctorado en ciencias',
-        'activo'
+        'activo',
+        '9'
     );
 
 insert into

@@ -16,6 +16,7 @@ import { EditarProfesores } from './components/EditarProfesores';
 import { EditarGrupo } from './components/EditarGrupo';
 import { Distribucion } from './components/Distribucion';
 import { Inscripcion } from './components/Inscripcion';
+import Horarios from './components/Horarios';
 function App() {
   const [success, setSuccess] = useState("");
   const [id2, setId2] = useState("");
@@ -38,6 +39,7 @@ function App() {
           )
         } />
         <Route path="/alumno/:id" element={<Alumno />} />
+  <Route path="/alumno/horarios/:id" element={<Horarios />} />
 
         <Route path="/administrador" element={<Administrador />} />
         <Route path="/profesor" element={<Profesor />} />

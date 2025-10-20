@@ -66,6 +66,112 @@ router.get("/ObtenerDist/:id", async (req, res) => {
         res.status(500).json({ error: "Error interno" });
     }
 });
+router.get("/ObtenerGrupo", async(req,res)=>{
+
+    try{
+      // Traer los grupos con datos personales y unidad de aprendizaje
+      const cursos = await bd.Grupo.findAll({
+        include: [
+          {
+            model: bd.DatosPersonales,
+            attributes :["nombre", "ape_paterno", "ape_materno"],
+          },
+          {
+            model: bd.Unidad_Aprendizaje,
+            attributes: ["nombre", "carrera"],
+          }
+        ],
+        raw: true,
+        nest: true
+      }); 
+
+      console.log('ObtenerGrupo: cursos obtenidos =', cursos.length);
+
+      // Si no hay cursos, devolver array vacío
+      if (!Array.isArray(cursos) || cursos.length === 0) {
+        return res.json({ cursos: [] });
+      }
+
+      // Obtener todas las distribuciones para los grupos obtenidos en una sola consulta
+      const groupIds = cursos.map(c => c.id);
+      const distribuciones = await bd.Distribucion.findAll({
+        where: { id_grupo: groupIds },
+        attributes: ["id", "id_grupo", "dia", "hora_ini", "hora_fin"],
+        raw: true,
+      });
+
+      // Adjuntar distribuciones a cada curso
+      const cursosConDistrib = cursos.map(c => {
+        const d = distribuciones.filter(x => x.id_grupo === c.id);
+        return { ...c, Distribucion: d };
+      });
+
+      res.json({cursos: cursosConDistrib});
+
+    }catch(error){
+      console.error("Error al obtener los cursos: ", error);
+      return res.status(500).json({ error: 'Error interno al obtener cursos' });
+    }
+    });
+
+
+router.get("/Alumno/VerHorarios/:id", async (req, res) => {
+  const { id } = req.params; 
+  try {
+
+    const grupos = await bd.Grupo.findAll({
+      attributes: ["id", "nombre", "id_ua", "id_prof", "cupo"],
+      include: [
+        {
+          model: bd.Unidad_Aprendizaje,
+          attributes: ["id", "nombre"],
+        },
+        {
+          model: bd.DatosPersonales,
+          attributes: ["id", "nombre", "ape_paterno", "ape_materno", "calificacion"],
+        },
+      ],
+      raw: true,
+      nest: true,
+    });
+
+    console.log('Grupos obtenidos count:', grupos.length);
+    const resultado = [];
+
+    for (const g of grupos) {
+      console.log('Procesando grupo raw:', g);
+      const distribuciones = await bd.Distribucion.findAll({
+        where: { id_grupo: g.id },
+        attributes: ["dia", "hora_ini", "hora_fin"],
+        raw: true,
+      });
+
+      console.log(`Distribuciones encontradas para grupo ${g.id}:`, distribuciones.length);
+      
+      const dias = { Lunes: [], Martes: [], Miercoles: [], Jueves: [], Viernes: [] };
+      distribuciones.forEach((d) => {
+        const diaKey = d.dia === 'Miércoles' || d.dia === 'Miercoles' ? 'Miercoles' : d.dia;
+        if (dias[diaKey] !== undefined) dias[diaKey].push(`${d.hora_ini}-${d.hora_fin}`);
+      });
+
+      const datosProf = g.DatosPersonale || g.DatosPersonales || {};
+      resultado.push({
+        id_grupo: g.id,
+        id_ua: (g.Unidad_Aprendizaje && (g.Unidad_Aprendizaje.id || g.Unidad_Aprendizaje.ID)) || g.id_ua,
+        nombre_ua: (g.Unidad_Aprendizaje && (g.Unidad_Aprendizaje.nombre || g.Unidad_Aprendizaje.Nombre)) || "",
+        profesor: `${datosProf.nombre || ""} ${datosProf.ape_paterno || ""} ${datosProf.ape_materno || ""}`.trim(),
+        calificacion_profesor: datosProf.calificacion || null,
+        cupo: g.cupo,
+        dias,
+      });
+    }
+
+    return res.json({ filas: resultado });
+  } catch (error) {
+    console.error('Error al obtener horarios:', error);
+    return res.status(500).json({ error: 'Error interno' });
+  }
+});
   router.post("/Agregar/:id", async(req, res)=>{
     const {id} = req.params;
     const us = req.user.id;
@@ -102,10 +208,9 @@ router.get("/ObtenerDist/:id", async (req, res) => {
             }
           });
 
-  // Distribución del nuevo grupo
+  // distribución del nuevo grupo
           const distriNuevo = distribuciones.filter(d => d.id_grupo === id);
 
-  // Comparar contra cada grupo actual
         for (const g of gruposActuales) {
             const distriExistente = distribuciones.filter(d => d.id_grupo === g);
 
@@ -128,12 +233,11 @@ router.get("/ObtenerDist/:id", async (req, res) => {
     else{
           req.session.creditos = parseInt(req.session.creditos, 10) - parseInt(cuesta.Unidad_Aprendizaje.credito,10)
           req.session.tempGrupos.push(id);
-           console.log("Grupo guardado: ", req.session.tempGrupos);
+          console.log("Grupo guardado: ", req.session.tempGrupos);
           console.log("Creditos:" , req.session.creditos)
           return res.json({success: true, tempGrupo : req.session.tempGrupos, creditos : req.session.creditos});
     }
-  }
-   
+  } 
   });
 
   router.post("/Inscribirse", async(req,res)=>{
