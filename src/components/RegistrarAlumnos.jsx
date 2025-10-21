@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export function RegistrarAlumnos() {
 
+    const [id, setId] = useState("");
     const [nombre, setNombre] = useState("")
     const [apellido_p, setApellido_p] = useState("")
     const [apellido_m, setApellido_m] = useState("")
@@ -23,6 +25,8 @@ export function RegistrarAlumnos() {
     const [error2, setError2] = useState(false);
     const [carreras, setCarreras] = useState([]);
     const [carreraSeleccionada, setCarreraSeleccionada] = useState("");
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         fetch("http://localhost:4000/ObtenerCarreras", { credentials: "include", })
@@ -46,23 +50,16 @@ export function RegistrarAlumnos() {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ nombre, apellido_p, apellido_m, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, numero_ex, numero_in, codigo_postal, colonia, delegacion, ciudad, telefono, correo, carreraSeleccionada }),
+            body: JSON.stringify({ id, nombre, apellido_p, apellido_m, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, numero_ex, numero_in, codigo_postal, colonia, delegacion, ciudad, telefono, correo, carreraSeleccionada }),
         });
-        const text = await res.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-            console.log(data);
-        } catch (error) {
-            console.error("No es JSON valido: ", error);
+        if (res.ok) {
+            alert("Alumno registrado correctamente");
+            navigate(`/administrador/gestionarAlumnos`)
+        } else {
+            const error = await res.text();
+            alert("Error: " + error);
         }
-        if (data.success) {
-            const tip = data.nivel_acceso
-        }
-        else {
-            setError2(true)
-            return
-        }
+
 
     }
 
@@ -73,6 +70,8 @@ export function RegistrarAlumnos() {
 
             <h1>Registrar Alumnos</h1>
             <form className="formulario" onSubmit={handleSubmit}>
+                <label>Boleta:</label>
+                <input type="text" value={id} onChange={(e) => setId(e.target.value)} />
                 <label>Nombre:</label>
                 <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
                 <label>Apellido Paterno:</label>

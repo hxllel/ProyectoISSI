@@ -8,11 +8,11 @@ module.exports = (passport) => {
   const router = express.Router();
 
     router.post("/RegistrarAlumno", async(req, res) => {
-        const {creditos_disponibles, nombre, apellido_p, apellido_m, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, numero_ex, numero_in, codigo_postal, colonia, delegacion, ciudad, telefono, correo } = req.body;
+        const {id, nombre, apellido_p, apellido_m, fecha_nacimiento, tipo_sangre, CURP, nacionalidad, calle, numero_ex, numero_in, codigo_postal, colonia, delegacion, ciudad, telefono, correo } = req.body;
 
         var ano = new Date().getFullYear();
         var numeroAleatorio = Math.floor(100000 + Math.random() * 900000);
-        var id = String(ano) + String(numeroAleatorio);
+        //var id = String(ano) + String(numeroAleatorio);
         const contra = uuidv4().replace(/-/g, "").substring(0, 15);
         console.log(contra);
 
@@ -493,10 +493,20 @@ router.post("/AgregarDist/:id", async (req, res) => {
             const carr = await bd.Carrera.findOne({
                 where: {nombre : carrera}
             });
+
+            
             const ua = await bd.Unidad_Aprendizaje.findOne({
                 where: {id : id_UA}
             });
             let name2 = String(ua.semestre) + String(carr.prefijo_grupo) + String(t) + String(nombre);
+            const val = await bd.Grupo.count({
+                where: {id_ua : id_UA,  nombre : name2}
+            });
+
+            if(val > 0){
+                return res.json({success:false})
+            }
+            else{
             const crearCurso = await bd.Grupo.create({
                 id: id2,
                 nombre: name2,
@@ -507,6 +517,7 @@ router.post("/AgregarDist/:id", async (req, res) => {
             });
             console.log("Curso creado: ");
             return res.json({ success: true});
+        }
 
         }catch(error){
             console.error("Error al crear el curso: ", error);

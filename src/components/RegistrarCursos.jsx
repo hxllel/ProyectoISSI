@@ -46,15 +46,18 @@ export function RegistrarCursos() {
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_profesor, id_UA, turno, nombre, carrera: carreragru }),
-            });
+            }).then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("grupo creado con éxito");
+                        navigate(`/administrador/gestionarCursos`)
+                    } else {
+                        alert("Error al crear el grupo");
+                    }
+                })
+                .catch(err => console.error("Error al crear el grupo:", err));;
 
-            if (res.ok) {
-                alert("Curso registrado correctamente");
-                navigate(`/administrador/gestionarCursos`)
-            } else {
-                const error = await res.text();
-                alert("Error: " + error);
-            }
+
         } catch (error) {
             console.error("Error al registrar el curso:", error);
         }

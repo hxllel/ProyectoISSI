@@ -32,23 +32,23 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     ape_paterno: { type: DataTypes.STRING(25), allowNull: false },
     ape_materno: { type: DataTypes.STRING(25), allowNull: false },
     fecha_nacimiento: { type: DataTypes.DATE, allowNull: false },
-    RFC: { type: DataTypes.STRING(20) },
+    RFC: { type: DataTypes.STRING(50) },
     tipo_sangre: { type: DataTypes.STRING(15), allowNull: false },
-    CURP: { type: DataTypes.STRING(20), allowNull: false },
-    nacionalidad: { type: DataTypes.STRING(20), allowNull: false },
-    calle: { type: DataTypes.STRING(20), allowNull: false },
-    num_exterior: { type: DataTypes.STRING(20), allowNull: false },
-    num_interior: { type: DataTypes.STRING(20), allowNull: false },
-    codigo_postal: { type: DataTypes.STRING(20), allowNull: false },
-    colonia: { type: DataTypes.STRING(20), allowNull: false },
-    delegacion: { type: DataTypes.STRING(20), allowNull: false },
-    ciudad: { type: DataTypes.STRING(20), allowNull: false },
-    telefono: { type: DataTypes.STRING(20), allowNull: false },
+    CURP: { type: DataTypes.STRING(50), allowNull: false },
+    nacionalidad: { type: DataTypes.STRING(50), allowNull: false },
+    calle: { type: DataTypes.STRING(50), allowNull: false },
+    num_exterior: { type: DataTypes.STRING(50), allowNull: false },
+    num_interior: { type: DataTypes.STRING(50), allowNull: false },
+    codigo_postal: { type: DataTypes.STRING(50), allowNull: false },
+    colonia: { type: DataTypes.STRING(50), allowNull: false },
+    delegacion: { type: DataTypes.STRING(50), allowNull: false },
+    ciudad: { type: DataTypes.STRING(50), allowNull: false },
+    telefono: { type: DataTypes.STRING(50), allowNull: false },
     email: { type: DataTypes.STRING(50), allowNull: false },
     foto: { type: DataTypes.BLOB},
     grado: { type: DataTypes.STRING(50) },
     carrera: { type: DataTypes.STRING(40) },
-    situacion:{ type: DataTypes.STRING(20) },
+    situacion:{ type: DataTypes.STRING(50) },
     calificacion:{ type: DataTypes.INTEGER }
   }, { tableName: "datos_personales", timestamps: false });
 
@@ -88,7 +88,7 @@ const DatosPersonales = sequelize.define("DatosPersonales", {
     id_usuario: {type: DataTypes.STRING(15), allowNull:false},
     promedio: {type:DataTypes.FLOAT, allowNull: false},
     creditos_disponibles: {type: DataTypes.FLOAT, allowNull: false},
-    estado_academico: {type: DataTypes.STRING(20), allowNull:false}
+    estado_academico: {type: DataTypes.STRING(50), allowNull:false}
   }, {tableName: "estudiante", timestamps:false});
 
     Estudiante.belongsTo(DatosPersonales, {
@@ -254,25 +254,26 @@ const UA_Aprobada = sequelize.define("UA_Aprobada", {
         id_grupo : { type: DataTypes.STRING(15), allowNull: false},
         id_alumno : {type: DataTypes.STRING(15), allowNull: false},
         id_profesor : {type: DataTypes.STRING(15), allowNull: false},
-        nombre : {type: DataTypes.STRING(25), allowNull: false},
+        calificacion : {type: DataTypes.STRING(25), allowNull: false},
         materia : {type: DataTypes.STRING(25), allowNull: false},
-        dia: {type: DataTypes.STRING(15), allowNull: false},
-        hora_lun: {type: DataTypes.STRING(20), allowNull: false},
-        hora_mar: {type: DataTypes.STRING(20), allowNull: false},
-        hora_mie: {type: DataTypes.STRING(20), allowNull: false},
-        hora_jue: {type: DataTypes.STRING(20), allowNull: false},
-        hora_vie: {type: DataTypes.STRING(20), allowNull: false},
+        horas_lun: {type: DataTypes.STRING(50), allowNull: true},
+        horas_mar: {type: DataTypes.STRING(50), allowNull: true},
+        horas_mie: {type: DataTypes.STRING(50), allowNull: true},
+        horas_jue: {type: DataTypes.STRING(50), allowNull: true},
+        horas_vie: {type: DataTypes.STRING(50), allowNull: true},
         creditos_necesarios: {type: DataTypes.FLOAT, allowNull: false},
-        valido :  {type: DataTypes.BOOLEAN, allowNull: false, defaultValue:true}
+        valido :  {type: DataTypes.INTEGER, allowNull: false, defaultValue:true}
       }, {tableName : "borrador_horario", timestamps:false});
 
       Borrador_Horario.belongsTo(DatosPersonales, {
         foreignKey: "id_alumno",
-        targetKey: "id"
+        targetKey: "id",
+        as: 'alumno'
     });
     Borrador_Horario.belongsTo(DatosPersonales, {
         foreignKey: "id_profesor",
-        targetKey: "id"
+        targetKey: "id",
+        as : 'profesor'
     });
     Borrador_Horario.belongsTo(Grupo, {
         foreignKey: "id_grupo",

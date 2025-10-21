@@ -316,7 +316,113 @@ router.get("/Alumno/VerHorarios/:id", async (req, res) => {
     res.json({success: true, tempGrupo : req.session.tempGrupos, creditos : req.session.creditos});
   });
 
-  
+  router.get("/ConsultarBorrador", async(req,res)=>{
+    try{
+      const borr = await bd.Borrador_Horario.findAll({
+        where:{id_alumno : req.user.id},
+        include :[{
+          model: bd.DatosPersonales,
+          attributes : ["nombre", "ape_paterno", "ape_materno"],
+          as : 'profesor'
+        },
+        {
+          model: bd.Grupo,
+          attributes: ["nombre", "cupo"]
+        }
+      ]
+      });
+
+      return res.json({horario : borr});
+    }
+    catch(err){
+      console.log(err);
+    }
+  })
+  router.post("/AgregarBorrador/:id", async (req, res) => {
+  try {
+    const us = req.user.id;
+    const { id } = req.params;
+    const id2 = uuidv4().replace(/-/g, "").substring(0, 15);
+    let val = 1;
+
+    //Obtener grupo, profesor y materia
+    const grupo = await bd.Grupo.findOne({ where: { id } });
+    const ua = await bd.Unidad_Aprendizaje.findOne({ where: { id: grupo.id_ua } });
+    const dat = await bd.DatosPersonales.findOne({ where: { id: grupo.id_prof } });
+
+    // Distribución del grupo que se va a agregar
+    const distriNuevo = await bd.Distribucion.findAll({ where: { id_grupo: id } });
+
+    // Obtener todos los grupos del borrador del usuario actual
+    const borradores = await bd.Borrador_Horario.findAll({ where: { id_alumno: us } });
+
+    if (borradores && borradores.length > 0) {
+      //Obtener los id_grupo actuales del borrador
+      const idsGruposUsuario = borradores.map(t => t.id_grupo);
+
+      // Obtener sus distribuciones
+      const distribucionesExistentes = await bd.Distribucion.findAll({
+        where: { id_grupo: idsGruposUsuario }
+      });
+
+      // Verificar traslapes
+      for (const dis of distriNuevo) {
+        for (const dis2 of distribucionesExistentes) {
+          if (seTraslapan(dis, dis2)) {
+            val = 0;
+
+            // Marcar el grupo existente como no válido
+            await bd.Borrador_Horario.update(
+              { valido: 0 },
+              { where: { id_grupo: dis2.id_grupo, id_alumno: us } }
+            );
+          }
+        }
+      }
+    }
+
+    // Armar las horas por día
+    let lun, mar, mier, jue, vie;
+    for (const g of distriNuevo) {
+      const horas = `${g.hora_ini} - ${g.hora_fin}`;
+      if (g.dia === "Lunes") lun = horas;
+      else if (g.dia === "Martes") mar = horas;
+      else if (g.dia === "Miercoles") mier = horas;
+      else if (g.dia === "Jueves") jue = horas;
+      else if (g.dia === "Viernes") vie = horas;
+    }
+
+    // Crear el nuevo registro en borrador
+    const borr = await bd.Borrador_Horario.create({
+      id: id2,
+      id_grupo: id,
+      id_alumno: us,
+      id_profesor: grupo.id_prof,
+      calificacion: dat.calificacion,
+      materia: ua.nombre,
+      horas_lun: lun,
+      horas_mar: mar,
+      horas_mie: mier,
+      horas_jue: jue,
+      horas_vie: vie,
+      creditos_necesarios: ua.credito,
+      valido: val
+    });
+
+    return res.json({
+      success: true,
+      message: val
+        ? "Grupo agregado correctamente sin traslapes."
+        : "Grupo agregado, pero se detectaron traslapes. Marcado como no válido.",
+      grupo: borr
+    });
+
+  } catch (error) {
+    console.error("Error al agregar borrador:", error);
+    return res.status(500).json({ success: false, message: "Error interno del servidor" });
+  }
+});
+
 
     return router;
 }
