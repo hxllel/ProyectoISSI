@@ -5,6 +5,88 @@ const { Op } = require("sequelize");
 const { raw } = require('mysql2');
 
 
+// Devuelve datos personales del alumno por id
+router.get("/Alumno/Perfil/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const alumno = await bd.DatosPersonales.findOne({
+      where: { id },
+      // Escoge las columnas que vas a mostrar/editar en el formulario:
+      attributes: [
+        "id", "nombre", "ape_paterno", "ape_materno",
+        "fecha_nacimiento", "RFC", "tipo_sangre", "CURP",
+        "nacionalidad", "calle", "num_exterior", "num_interior",
+        "codigo_postal", "colonia", "delegacion", "ciudad",
+        "telefono", "email", "grado", "carrera", "situacion", "calificacion"
+      ]
+    });
+
+    if (!alumno) {
+      return res.status(404).json({ success: false, message: "Alumno no encontrado" });
+    }
+
+    return res.json({ success: true, data: alumno });
+  } catch (err) {
+    console.error("Error GET /Alumno/Perfil:", err);
+    return res.status(500).json({ success: false, message: "Error del servidor" });
+  }
+});
+
+
+// ACTUALIZAR DATOS  
+// Actualiza únicamente los campos permitidos (lista blanca)
+router.put("/Alumno/Actualizar/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Lista blanca según tu BD (tabla datos_personales del bd.sql)
+    const allowed = [
+      "nombre", "ape_paterno", "ape_materno",
+      "fecha_nacimiento", "RFC", "tipo_sangre", "CURP",
+      "nacionalidad", "calle", "num_exterior", "num_interior",
+      "codigo_postal", "colonia", "delegacion", "ciudad",
+      "telefono", "email", "grado", "carrera", "situacion", "calificacion"
+    ];
+
+    const payload = {};
+    for (const k of allowed) {
+      if (k in req.body) payload[k] = req.body[k];
+    }
+
+    if (Object.keys(payload).length === 0) {
+      return res.status(400).json({ success: false, message: "No hay campos válidos para actualizar" });
+    }
+
+    const [updated] = await bd.DatosPersonales.update(payload, { where: { id } });
+
+    if (updated === 0) {
+      return res.status(404).json({ success: false, message: "Alumno no encontrado o sin cambios" });
+    }
+
+    // Opcional: devolver el registro actualizado
+    const alumno = await bd.DatosPersonales.findOne({
+      where: { id },
+      attributes: [
+        "id", "nombre", "ape_paterno", "ape_materno",
+        "fecha_nacimiento", "RFC", "tipo_sangre", "CURP",
+        "nacionalidad", "calle", "num_exterior", "num_interior",
+        "codigo_postal", "colonia", "delegacion", "ciudad",
+        "telefono", "email", "grado", "carrera", "situacion", "calificacion"
+      ]
+    });
+
+    return res.json({
+      success: true,
+      message: "Datos personales actualizados correctamente",
+      data: alumno
+    });
+  } catch (err) {
+    console.error("Error PUT /Alumno/Actualizar:", err);
+    return res.status(500).json({ success: false, message: "Error del servidor" });
+  }
+});
+
 module.exports = (passport) =>{
     const router = express.Router();
 
