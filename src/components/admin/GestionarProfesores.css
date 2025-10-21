@@ -1,0 +1,175 @@
+.contenedor-profesores {
+  padding: 30px 50px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #fafafa;
+  color: #333;
+}
+
+.titulo {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #222;
+}
+
+.barra-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.botones-acciones .btn {
+  margin-right: 10px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn.registrar {
+  background-color: #7a0026;
+  color: #fff;
+}
+
+.btn.editar {
+  background-color: #e1e1e1;
+  color: #333;
+}
+
+.btn.eliminar {
+  background-color: #c0392b;
+  color: white;
+}
+
+.btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.busqueda input,
+.busqueda select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+.tabla-contenedor {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tabla-profesores {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-profesores th {
+  background-color: #7a0026;
+  color: white;
+  text-align: left;
+  padding: 12px;
+  font-weight: 600;
+}
+
+.tabla-profesores td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.tabla-profesores tr:hover {
+  background-color: #f8f8f8;
+}
+
+.btn-tabla {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-tabla.editar {
+  background-color: #3498db;
+  color: white;
+  margin-right: 5px;
+}
+
+.btn-tabla.eliminar {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.sin-registros {
+  text-align: center;
+  color: #777;
+  padding: 15px;
+}
+
+.modal-fondo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: white;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+}
+
+.modal-botones {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn.cancelar {
+  background-color: #7f8c8d;
+  color: white;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;              /* Espacio entre imagen y texto */
+  color: #8a1538;
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 40px;
+}
+
+.logo-img {
+  width: 80px;            /* Tamaño del logo */
+  height: 80px;
+  object-fit: contain;    /* Ajusta la imagen sin deformarla */
+}
+
+.logo span {
+  font-size: 1.8rem;         /* tamaño de la letra */
+  font-weight: bold;       /* negrita */
+  color: #333;             /* color del texto */
+}
