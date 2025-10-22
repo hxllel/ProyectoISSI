@@ -1,0 +1,31 @@
+:root{
+  --guinda:#6e0028; --guinda-2:#8b0e39; --rojo:#b71c1c; --azul:#0033a0;
+  --borde:#e5e7eb; --bg:#fff; --ok:#0f9d58; --err:#d93025;
+}
+.ea-wrap{max-width:1000px;margin:32px auto;padding:0 16px;background:var(--bg);}
+.ea-header{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ea-header h1{margin:0;color:var(--guinda);letter-spacing:.2px}
+.ea-sub{color:var(--azul);margin:.25rem 0 0;font-weight:600;}
+.ea-logo{height:48px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08));}
+
+.ea-card{margin-top:16px;background:#fff;border:1px solid var(--borde);border-radius:18px;padding:20px;box-shadow:0 10px 24px rgba(110,0,40,.06);}
+.ea-loading{font-weight:700;color:#111827}
+
+.ea-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:900px){.ea-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.ea-grid{grid-template-columns:1fr}}
+
+.ea-field label{display:block;font-weight:700;color:#111827;margin:0 0 6px}
+.ea-field input,.ea-field select{width:100%;border:1px solid var(--borde);border-radius:12px;padding:12px 14px;outline:none;transition:border .2s,box-shadow .2s;}
+.ea-field input:focus,.ea-field select:focus{border-color:var(--azul);box-shadow:0 0 0 4px rgba(0,51,160,.12);}
+
+.ea-actions{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
+.ea-btn{border-radius:12px;padding:12px 18px;font-weight:800;letter-spacing:.3px;border:1px solid transparent;cursor:pointer;}
+.ea-btn.primary{color:#fff;background:linear-gradient(135deg,var(--guinda),var(--guinda-2));box-shadow:0 10px 18px rgba(110,0,40,.15);}
+.ea-btn.primary:hover{filter:saturate(1.04) brightness(1.02);}
+.ea-btn.ghost{background:transparent;border-color:var(--azul);color:var(--azul);}
+.ea-btn.ghost:hover{background:rgba(0,51,160,.06);}
+
+.ea-alert{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid;font-weight:700}
+.ea-alert.ok{color:var(--ok);background:#f1fbf5;border-color:#a8e6c1}
+.ea-alert.error{color:var(--err);background:#fff3f2;border-color:#f6b8b0}

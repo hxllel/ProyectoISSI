@@ -1,126 +1,165 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import "./EditarAlumnos.css";
 
-export function EditarAlumnos() {
-    const { id } = useParams();
-    const navigate = useNavigate();
+const BASE_URL = import.meta?.env?.VITE_API_URL || "http://localhost:4000";
 
-    const [alumno, setAlumno] = useState({
-        nombre: "",
-        ape_paterno: "",
-        ape_materno: "",
-        fecha_nacimiento: "",
-        tipo_sangre: "",
-        CURP: "",
-        nacionalidad: "",
-        calle: "",
-        num_exterior: "",
-        num_interior: "",
-        codigo_postal: "",
-        colonia: "",
-        delegacion: "",
-        ciudad: "",
-        telefono: "",
-        email: "",
-        carrera: ""
-    });
+function EditarAlumnos() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-    const [carreras, setCarreras] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState({ type: "", msg: "" });
 
-    useEffect(() => {
-        fetch(`http://localhost:4000/ObtenerAlumno/${id}`, { credentials: "include", })
-            .then(res => res.json())
-            .then(data => {
-                if (data.alumno) setAlumno(data.alumno);
-            })
-            .catch(err => console.error("Error al obtener el alumno:", err));
-    }, [id]);
+  const carreras = [
+    "Ing. en Inteligencia Artificial",
+    "Ing. en Sistemas Computacionales",
+    "Licenciatura en Ciencias de Datos",
+  ];
+  const semestres = ["1","2","3","4","5","6","7","8"];
+  const grupos = ["1IM1","2IM2","3IM3","4IM4","5IM5","6IM6","7IM7","8IM8"];
 
-    useEffect(() => {
-        fetch("http://localhost:4000/ObtenerCarreras")
-            .then(res => res.json())
-            .then(data => setCarreras(data.carreras || []))
-            .catch(err => console.error("Error al obtener las carreras:", err));
-    }, []);
+  const [form, setForm] = useState({
+    boleta: "", nombre: "", apellidos: "", correo: "",
+    carrera: "", semestre: "", grupo: ""
+  });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setAlumno(prev => ({ ...prev, [name]: value }));
-    };
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/ObtenerAlumno/${id}`, { credentials: "include" });
+        if (!res.ok) throw new Error("No se pudo obtener el alumno.");
+        const { alumno } = await res.json();
+        if (!alive) return;
+        setForm({
+          boleta: alumno?.boleta ?? "",
+          nombre: alumno?.nombre ?? "",
+          apellidos: alumno?.apellidos ?? "",
+          correo: alumno?.correo ?? "",
+          carrera: alumno?.carrera ?? "",
+          semestre: alumno?.semestre?.toString?.() ?? "",
+          grupo: alumno?.grupo ?? "",
+        });
+      } catch (e) {
+        setStatus({ type: "error", msg: e.message });
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [id]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  }
 
-        fetch(`http://localhost:4000/EditarAlumno/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(alumno),
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Alumno editado con éxito");
-                    navigate("/administrador/gestionarAlumnos");
-                } else {
-                    alert("Error al editar el alumno");
-                }
-            })
-            .catch(err => console.error("Error al editar el alumno:", err));
-    };
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setStatus({ type: "", msg: "" });
+    if (!form.boleta || !form.nombre || !form.apellidos || !form.correo) {
+      setStatus({ type: "error", msg: "Completa los campos obligatorios." });
+      return;
+    }
+    try {
+      setSaving(true);
+      const res = await fetch(`${BASE_URL}/ActualizarAlumno/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Error al actualizar.");
+      setStatus({ type: "ok", msg: "Alumno actualizado correctamente." });
+      setTimeout(() => navigate(-1), 900);
+    } catch (e) {
+      setStatus({ type: "error", msg: e.message });
+    } finally {
+      setSaving(false);
+    }
+  }
 
+  if (loading) {
     return (
-        <section>
-            <h1>Editar Alumno</h1>
-            <form className="formulario" onSubmit={handleSubmit}>
-                <label>Nombre:</label>
-                <input type="text" name="nombre" value={alumno.nombre} onChange={handleChange} />
-                <label>Apellido Paterno:</label>
-                <input type="text" name="ape_paterno" value={alumno.ape_paterno} onChange={handleChange} />
-                <label>Apellido Materno:</label>
-                <input type="text" name="ape_materno" value={alumno.ape_materno} onChange={handleChange} />
-                <label>Fecha de Nacimiento:</label>
-                <input type="date" name="fecha_nacimiento" value={alumno.fecha_nacimiento} onChange={handleChange} />
-                <label>Tipo de Sangre:</label>
-                <input type="text" name="tipo_sangre" value={alumno.tipo_sangre} onChange={handleChange} />
-                <label>CURP:</label>
-                <input type="text" name="CURP" value={alumno.CURP} onChange={handleChange} />
-                <label>Nacionalidad:</label>
-                <input type="text" name="nacionalidad" value={alumno.nacionalidad} onChange={handleChange} />
-                <label>Calle:</label>
-                <input type="text" name="calle" value={alumno.calle} onChange={handleChange} />
-                <label>Número Exterior:</label>
-                <input type="text" name="num_exterior" value={alumno.num_exterior} onChange={handleChange} />
-                <label>Número Interior:</label>
-                <input type="text" name="num_interior" value={alumno.num_interior} onChange={handleChange} />
-                <label>Código Postal:</label>
-                <input type="text" name="codigo_postal" value={alumno.codigo_postal} onChange={handleChange} />
-                <label>Colonia:</label>
-                <input type="text" name="colonia" value={alumno.colonia} onChange={handleChange} />
-                <label>Delegación:</label>
-                <input type="text" name="delegacion" value={alumno.delegacion} onChange={handleChange} />
-                <label>Ciudad:</label>
-                <input type="text" name="ciudad" value={alumno.ciudad} onChange={handleChange} />
-                <label>Teléfono:</label>
-                <input type="text" name="telefono" value={alumno.telefono} onChange={handleChange} />
-                <label>Correo Electrónico:</label>
-                <input type="email" name="email" value={alumno.email} onChange={handleChange} />
-
-                <label>Carrera:</label>
-                <select
-                    name="carrera"
-                    value={alumno.carrera || ""}
-                    onChange={handleChange}
-                >
-                    <option value="">Seleccione una carrera</option>
-                    {carreras.map((c) => (
-                        <option key={c.nombre} value={c.nombre}>
-                            {c.nombre}
-                        </option>
-                    ))}
-                </select>
-
-                <button type="submit">Editar Alumno</button>
-            </form>
-        </section>
+      <div className="ea-wrap">
+        <div className="ea-card"><p className="ea-loading">Cargando…</p></div>
+      </div>
     );
+  }
+
+  return (
+    <div className="ea-wrap">
+      <header className="ea-header">
+        <div>
+          <h1>Editar Alumno</h1>
+          <p className="ea-sub">Actualiza los datos del estudiante</p>
+        </div>
+        <img className="ea-logo" src="/escom-logo.png" alt="ESCOM" />
+      </header>
+
+      <form className="ea-card" onSubmit={handleSubmit} noValidate>
+        <div className="ea-grid">
+          <div className="ea-field">
+            <label>Boleta *</label>
+            <input name="boleta" value={form.boleta} onChange={handleChange} />
+          </div>
+          <div className="ea-field">
+            <label>Nombre *</label>
+            <input name="nombre" value={form.nombre} onChange={handleChange} />
+          </div>
+          <div className="ea-field">
+            <label>Apellidos *</label>
+            <input name="apellidos" value={form.apellidos} onChange={handleChange} />
+          </div>
+          <div className="ea-field">
+            <label>Correo institucional *</label>
+            <input type="email" name="correo" value={form.correo} onChange={handleChange} />
+          </div>
+
+          <div className="ea-field">
+            <label>Carrera</label>
+            <select name="carrera" value={form.carrera} onChange={handleChange}>
+              <option value="">Selecciona…</option>
+              {carreras.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="ea-field">
+            <label>Semestre</label>
+            <select name="semestre" value={form.semestre} onChange={handleChange}>
+              <option value="">Selecciona…</option>
+              {semestres.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="ea-field">
+            <label>Grupo</label>
+            <select name="grupo" value={form.grupo} onChange={handleChange}>
+              <option value="">Selecciona…</option>
+              {grupos.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="ea-actions">
+          <button className="ea-btn primary" disabled={saving}>
+            {saving ? "Guardando…" : "Guardar cambios"}
+          </button>
+          <button type="button" className="ea-btn ghost" onClick={() => navigate(-1)}>
+            Cancelar
+          </button>
+        </div>
+
+        {status.msg && (
+          <div className={`ea-alert ${status.type === "ok" ? "ok" : "error"}`}>
+            {status.msg}
+          </div>
+        )}
+      </form>
+    </div>
+  );
 }
+
+export default EditarAlumnos;   
+export { EditarAlumnos };       
