@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { Op } = require("sequelize");
 const { raw } = require('mysql2');
 
+const router = express.Router();
 
 // Devuelve datos personales del alumno por id
 router.get("/Alumno/Perfil/:id", async (req, res) => {
@@ -88,7 +89,7 @@ router.put("/Alumno/Actualizar/:id", async (req, res) => {
 });
 
 module.exports = (passport) =>{
-    const router = express.Router();
+    
 
 
     router.get("/Grupos/:id", async (req, res) => {
