@@ -2,7 +2,7 @@ DROP DATABASE IF EXISTS SAES;
 
 CREATE DATABASE SAES;
 
-USE SAES
+USE SAES;
 
 DROP TABLE IF EXISTS datos_personales;
 
@@ -40,23 +40,23 @@ create table datos_personales (
     ape_paterno varchar(25) not null,
     ape_materno varchar(25) not null,
     fecha_nacimiento date not null,
-    RFC varchar(20),
+    RFC varchar(50),
     tipo_sangre varchar(15) not null,
-    CURP varchar(20) not null,
-    nacionalidad varchar(20) not null,
-    calle varchar(20) not null,
-    num_exterior varchar(20) not null,
-    num_interior varchar(20) not null,
-    codigo_postal varchar(20) not null,
-    colonia varchar(20) not null,
-    delegacion varchar(20) not null,
-    telefono varchar(20) not null,
-    ciudad varchar(20) not null,
+    CURP varchar(50) not null,
+    nacionalidad varchar(50) not null,
+    calle varchar(50) not null,
+    num_exterior varchar(50) not null,
+    num_interior varchar(50) not null,
+    codigo_postal varchar(50) not null,
+    colonia varchar(50) not null,
+    delegacion varchar(50) not null,
+    telefono varchar(50) not null,
+    ciudad varchar(50) not null,
     email varchar(50) not null,
     foto BLOB,
     grado varchar(50),
     carrera varchar(40),
-    situacion varchar(20),
+    situacion varchar(50),
     calificacion int,
     CONSTRAINT PK_USUARIOS PRIMARY KEY (id)
 );
@@ -85,7 +85,7 @@ create table estudiante (
     id_usuario varchar(15) not null,
     promedio float not null,
     creditos_disponibles float not null,
-    estado_academico varchar(20) not null,
+    estado_academico varchar(50) not null,
     constraint PK_ES PRIMARY KEY (id),
     CONSTRAINT FK_ES_DP FOREIGN KEY (id_usuario) REFERENCES datos_personales (id)
 );
@@ -194,15 +194,15 @@ create table borrador_horario (
     id_grupo varchar(15) not null,
     id_alumno varchar(15) not null,
     id_profesor varchar(15) not null,
-    nombre varchar(25) not null,
+    calificacion varchar(25) not null,
     materia varchar(25) not null,
-    horas_lun varchar(20) not null,
-    horas_mar varchar(20) not null,
-    horas_mie varchar(20) not null,
-    horas_jue varchar(20) not null,
-    horas_vie varchar(20) not null,
+    horas_lun varchar(50),
+    horas_mar varchar(50),
+    horas_mie varchar(50),
+    horas_jue varchar(50),
+    horas_vie varchar(50),
     creditos_necesarios float not null,
-    valido BOOLEAN NOT NULL DEFAULT TRUE,
+    valido tinyint(1),
     CONSTRAINT PK_BOR PRIMARY KEY (id),
     CONSTRAINT FK_BOR_DP FOREIGN KEY (id_alumno) REFERENCES datos_personales (id),
     CONSTRAINT FK_BOR_PRO FOREIGN KEY (id_profesor) REFERENCES datos_personales (id),
@@ -232,7 +232,8 @@ INSERT INTO
         telefono,
         email,
         grado,
-        situacion
+        situacion,
+        calificacion
     )
 VALUES (
         '2023635321',
@@ -256,7 +257,8 @@ VALUES (
         '123456',
         'juan_perez@gmail.com',
         'n/a',
-        'activo'
+        'activo',
+        '10'
     ),
     (
         'HIJKLMNO',
@@ -280,7 +282,8 @@ VALUES (
         '654321',
         'maria_lopez@gmail.com',
         'doctorado en ciencias',
-        'activo'
+        'activo',
+        '9'
     );
 
 insert into

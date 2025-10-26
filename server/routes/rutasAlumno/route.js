@@ -75,7 +75,8 @@ module.exports = (passport) => {
         return res.status(400).json({ success: false, message: "No hay campos válidos para actualizar" });
       }
 
-      const [updated] = await bd.DatosPersonales.update(payload, { where: { id } });
+module.exports = (passport) =>{
+    
 
       if (updated === 0) {
         return res.status(404).json({ success: false, message: "Alumno no encontrado o sin cambios" });

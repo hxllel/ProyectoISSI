@@ -20,6 +20,27 @@ export function Distribucion() {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    const handleHoraInicio = (e) => {
+        const nuevaHoraIni = e.target.value;
+        setHora_ini(nuevaHoraIni);
+
+        // Si ya hay una hora de fin seleccionada, validar
+        if (hora_fin && nuevaHoraIni >= hora_fin) {
+            alert("La hora de inicio no puede ser mayor o igual que la hora de fin");
+            setHora_ini("");
+        }
+    };
+
+    const handleHoraFin = (e) => {
+        const nuevaHoraFin = e.target.value;
+        setHora_fin(nuevaHoraFin);
+
+        // Si ya hay una hora de inicio seleccionada, validar
+        if (hora_ini && nuevaHoraFin <= hora_ini) {
+            alert("La hora de fin no puede ser menor o igual que la hora de inicio");
+            setHora_fin("");
+        }
+    };
 
     useEffect(() => {
         fetch(`http://localhost:4000/ObtenerDist/${id}`, { credentials: "include", })
@@ -133,10 +154,24 @@ export function Distribucion() {
                     </select>
 
                     <label>Hora que inicia la clase:</label>
-                    <input type="time" min="07:00" max="22:00" value={hora_ini} onChange={(e) => setHora_ini(e.target.value)} required />
+                    <input
+                        type="time"
+                        min="07:00"
+                        max="22:00"
+                        value={hora_ini}
+                        onChange={handleHoraInicio}
+                        required
+                    />
                     <br />
                     <label>Hora que finaliza la clase:</label>
-                    <input type="time" min="07:00" max="22:00" value={hora_fin} onChange={(e) => setHora_fin(e.target.value)} required />
+                    <input
+                        type="time"
+                        min="07:00"
+                        max="22:00"
+                        value={hora_fin}
+                        onChange={handleHoraFin}
+                        required
+                    />
                     <button type="submit" className="btn-enviar">Enviar</button>
                 </form>
             </Modal>
